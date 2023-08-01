@@ -1,0 +1,87 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    margin-inline: 0;
+    margin-top: 5rem;
+    font-size: 1.6rem;
+    background-color: slateblue;
+}
+
+.calculator {
+    width: 40rem;
+    height: 50rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    border: .4rem solid black;
+    background-color:antiquewhite;
+}
+
+.display {
+    text-align:right;
+    font-size: 8.5rem;
+    border-bottom: .3rem solid black;
+    background-color:darkgrey;
+}
+
+.actions {
+    flex: 1;
+    display:flex;
+}
+
+.digits {
+    flex: 1 1 calc((3/4) * 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.digits__group {
+    flex: 1;
+    display: flex;
+}
+
+.digits__button {
+    flex: 1;
+    font-size: 2rem;
+    background-color:cadetblue;
+}
+
+.operators {
+    flex: 1 1 calc((1/4) * 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.operators__button {
+    flex: 1;
+    background-color: orange;
+}
+
+.functions .digits__button{
+    background-color:dodgerblue;
+}
+
+.zero {
+    flex: 1 1 calc((2/3) * 100%);
+}
+
+.decimal {
+    flex: 1 1 calc((1/3) * 100%);
+}
+
+.digits__button, .operators__button {
+    font-size: 2rem;
+    border: .1rem solid black;
+    cursor: pointer;
+    transition: .05s opacity;
+}
+
+.clicked {
+    opacity: .8;
+}
