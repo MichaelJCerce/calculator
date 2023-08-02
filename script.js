@@ -1,5 +1,6 @@
 const display = document.querySelector(".display");
 const buttons = document.querySelectorAll("button");
+const clear = document.querySelector(".clear");
 
 let firstNum = "";
 let operator = "";
@@ -31,7 +32,6 @@ function percent(x, y) {
 }
 
 function operate(firstNum, operator, secondNum) {
-  console.log(operator);
   let result;
   switch (operator) {
     case "+":
@@ -50,18 +50,20 @@ function operate(firstNum, operator, secondNum) {
       result = percent(firstNum, secondNum);
       break;
     default:
-      console.log("huh");
+      result = "uh oh";
   }
-
-  if (String(result).length > 9) {
-    display.innerText = result.toExponential(2);
-  } else {
-    display.innerText = result;
-  }
-
   if (!Number(result)) {
+    display.innerText = result;
     return firstNum;
-  } else return result;
+  }
+  if (Number.isInteger(result) && result < 10 ** 9) {
+    display.innerText = result;
+  } else if (result >= 10 ** 9) {
+    display.innerText = result.toExponential(3);
+  } else {
+    display.innerText = result.toFixed(3);
+  }
+  return result;
 }
 
 buttons.forEach((button) => {
@@ -69,7 +71,9 @@ buttons.forEach((button) => {
     e.target.classList.add("clicked");
     let value = e.target.innerText;
     let isOperator = validOperator(value);
-
+    if (value != "AC") {
+      clear.innerText = "C";
+    }
     if (value === "=") {
       if (operator !== "" && secondNum === "") {
         firstNum = operate(+firstNum, operator, +tempNum);
@@ -81,12 +85,13 @@ buttons.forEach((button) => {
         secondNum = "";
       }
     } else if (value === "+/-" && secondNum === "") {
-      firstNum = consumeNum(firstNum, value);
+      firstNum = consumeNumber(firstNum, value);
     } else if (!isOperator && operator === "") {
       if (tempNum != firstNum) {
         firstNum = "";
       }
-      firstNum = consumeNum(firstNum, value);
+      //   clear.innerText = "C";
+      firstNum = consumeNumber(firstNum, value);
       tempNum = firstNum;
     } else if (tempSign === "+" || tempSign === "-") {
       firstNum = operate(+firstNum, operator, +value);
@@ -96,7 +101,8 @@ buttons.forEach((button) => {
       temp = "";
       tempSign = "";
     } else if (!isOperator && operator !== "") {
-      secondNum = consumeNum(secondNum, value);
+      //   clear.innerText = "C";
+      secondNum = consumeNumber(secondNum, value);
     } else if (value === "%") {
       if (secondNum === "") {
         firstNum = operate(+firstNum, value, NaN);
@@ -128,10 +134,14 @@ buttons.forEach((button) => {
   });
 });
 
-function consumeNum(num, e) {
+function consumeNumber(num, e) {
   num = String(num);
   if (!Number.isNaN(Number(e))) {
-    num = String(Number(num + e));
+    if (num.includes(".")) {
+      num = String(num + e);
+    } else {
+      num = String(Number(num + e));
+    }
   } else if (e === "." && !num.includes(".")) {
     num = String(num + ".");
   } else if (e === "+/-") {
@@ -140,20 +150,20 @@ function consumeNum(num, e) {
     } else {
       num = "0";
     }
+  } else if (e === "C") {
+    num = "0";
+    clear.innerText = "AC";
   } else if (e === "AC") {
-    if (Number(num)) {
-      num = "0";
-    } else {
-      firstNum = "";
-      operator = "";
-      secondNum = "";
-      num = "";
-      display.innerText = "0";
-      return num;
-    }
+    firstNum = "";
+    operator = "";
+    secondNum = "";
+    num = "";
+    display.innerText = "0";
+
+    return num;
   }
-  if (num.length > 9) {
-    display.innerText = num.toExponential(2);
+  if (num.length > 12) {
+    display.innerText = Number(num).toExponential(3);
   } else {
     display.innerText = num;
   }
