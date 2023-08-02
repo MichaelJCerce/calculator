@@ -74,57 +74,82 @@ buttons.forEach((button) => {
     if (value != "AC") {
       clear.innerText = "C";
     }
+    //handle user = call
     if (value === "=") {
+      //used when user only specifies a single operand and an operator
+      //ex. user input of 6+= is equivalent to firstNum += 6
       if (operator !== "" && secondNum === "") {
         firstNum = operate(+firstNum, operator, +tempNum);
       } else if (secondNum === "") {
+        //the user is just hitting enter with one operand
         display.innerText = firstNum;
       } else {
+        //regular use case. two operands and an operator
         firstNum = operate(+firstNum, operator, +secondNum);
         operator = "";
         secondNum = "";
       }
     } else if (value === "+/-" && secondNum === "") {
+      //allows user to toggle sign of the first num after selecting an operator
       firstNum = consumeNumber(firstNum, value);
-    } else if (!isOperator && operator === "") {
-      if (tempNum != firstNum) {
-        firstNum = "";
+    } else if (value === "%") {
+      if (secondNum === "") {
+        //find firstnum/100
+        firstNum = operate(+firstNum, value, NaN);
+      } else {
+        secondNum = operate(+firstNum, value, +secondNum); //find secondnum percent of firstnum
       }
-      //   clear.innerText = "C";
-      firstNum = consumeNumber(firstNum, value);
-      tempNum = firstNum;
     } else if (tempSign === "+" || tempSign === "-") {
-      firstNum = operate(+firstNum, operator, +value);
-      operator = tempSign;
+      //used if user is chaining operators. if we encounter one with higher precedence must put old expression on hold
+      if (isOperator && (value === "+" || value === "-")) {
+        //user was going to do multiplication/division but changed their mind.  perform old operation and point to the new + or -
+        firstNum = operate(+temp, tempSign, firstNum);
+        operator = value; //
+        secondNum = "";
+        tempSign = "";
+        temp = "";
+        return;
+      } else if (isOperator && operator !== value) {
+        //user changed operator of similar precedence. ex: mul --> div
+        operator = value;
+        return;
+      }
+      firstNum = operate(+firstNum, operator, +value); //perform new operation
+      operator = tempSign; //begin to restore  the old one
       secondNum = firstNum;
       firstNum = temp;
       temp = "";
       tempSign = "";
-    } else if (!isOperator && operator !== "") {
-      //   clear.innerText = "C";
-      secondNum = consumeNumber(secondNum, value);
-    } else if (value === "%") {
-      if (secondNum === "") {
-        firstNum = operate(+firstNum, value, NaN);
-      } else {
-        secondNum = operate(+firstNum, value, +secondNum);
+    } else if (!isOperator && operator === "") {
+      //if there is no operator and current input isn't an operator, must be generating first num
+      if (tempNum != firstNum) {
+        //firstNum will usually hold rseult of chained operations.
+        firstNum = ""; //needs this to reset firstNum if user is starting a brand new expression
       }
+      firstNum = consumeNumber(firstNum, value);
+      tempNum = firstNum;
+    } else if (!isOperator && operator !== "") {
+      //if there is an operator and the current input isn't an operator, mmust be generating second num
+      secondNum = consumeNumber(secondNum, value);
     } else if (isOperator && firstNum !== "" && secondNum !== "") {
+      //used to handle chaining of operators.
       if (
+        //if the user chained an operator of a higher precedence, we must perform that first.
         (operator === "+" || operator === "-") &&
         (value === "*" || value === "/")
       ) {
-        temp = firstNum;
+        temp = firstNum; //store old expression in temps
         firstNum = secondNum;
         secondNum = "";
         tempSign = operator;
         operator = value;
         return;
       }
-      firstNum = operate(+firstNum, operator, +secondNum);
-      operator = value;
-      secondNum = "";
+      firstNum = operate(+firstNum, operator, +secondNum); //otherwise compute expression
+      operator = value; //update operator
+      secondNum = ""; //and get ready for next input
     } else if (isOperator && (operator === "" || secondNum == "")) {
+      //if the user is spamming operators, update the current one
       operator = value;
     }
   });
@@ -188,3 +213,11 @@ function validOperator(oper) {
       return false;
   }
 }
+
+document.addEventListener("keydown", (e) => {
+  buttons.forEach((button) => {
+    if (button.getAttribute("data-key") === e.key) {
+      button.click();
+    }
+  });
+});
